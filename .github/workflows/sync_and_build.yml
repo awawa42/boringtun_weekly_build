@@ -96,6 +96,7 @@ jobs:
           
       - name: Release
         shell: bash
+        working-directory: ./release
         run: |
           set -x
           build_date=$(date +%m-%d-%Y_%N)
@@ -108,6 +109,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload S3
         shell: bash
+        working-directory: ./release
         run: |
           set -x
           aws s3  --endpoint-url=https://gateway.storjshare.io cp *.tgz s3://deb/
