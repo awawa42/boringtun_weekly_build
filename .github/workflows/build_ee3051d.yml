@@ -19,7 +19,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout BoringTun
-        uses: actions/checkout@v3
+        uses: actions/checkout@v1
+        with:
+          repository: cloudflare/boringtun
+          ref: ee3051d
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -53,9 +56,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          repository: cloudflare/boringtun
-          ref: ee3051d
+
         
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
