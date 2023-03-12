@@ -1,23 +1,9 @@
-
-name: sync_and_build
+name: build_ee3051d
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '30 6 * * 0'
 
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_dispatch' }}
-    steps:
-      - uses: tgymnich/fork-sync@v1.8
-        with:
-          base: master
-          head: master
-          
+jobs:         
   build:
-    needs: sync
-    if: ${{ success() || github.event_name == 'workflow_dispatch' }}
     strategy:
       fail-fast: false
       matrix:
@@ -30,32 +16,24 @@ jobs:
             os: ubuntu-latest
             cross: true
 
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
-            cross: true
-
-          - target: aarch64-unknown-linux-musl
-            os: ubuntu-latest
-            cross: true
-
-          - target: x86_64-apple-darwin
-            os: macos-latest
-            cross: false
-
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout BoringTun
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v1
+        with:
+          repository: cloudflare/boringtun
+          path: boringtun_weekly_build
+          ref: ee3051d
+          
       - name: Install Rust
-        uses: actions-rs/toolchain@v1.0.6
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           target: ${{ matrix.target }}
           override: true
 
       - name: Build
-        uses: actions-rs/cargo@v1.0.1
+        uses: actions-rs/cargo@v1
         with:
           use-cross: ${{ matrix.cross }}
           command: build
@@ -79,6 +57,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
         
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
@@ -93,7 +72,6 @@ jobs:
         run: |
           mkdir release
           find ./artifacts -iname '*.tgz' -print0|xargs -0i  mv {} ./release/
-
       - name: generate hash
         shell: bash
         working-directory: ./release
@@ -106,7 +84,7 @@ jobs:
         run: |
           set -x
           build_date=$(date +%m-%d-%Y_%N)
-          commit_hash=$(git ls-remote -q https://github.com/cloudflare/boringtun.git HEAD|awk '{print $1}')
+          commit_hash=ee3051d
           for f in ./release/*.tgz; do FILES+=" -a $f"; done
           for f in ./release/*.sha256; do FILES+=" -a $f";MSG+="sha256 $(cat $f)\n"; done
           MSG=$(printf "$build_date\n\nBuilt from https://github.com/cloudflare/boringtun/commit/$commit_hash\n$MSG")
@@ -124,4 +102,3 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_EC2_METADATA_DISABLED: true
-
