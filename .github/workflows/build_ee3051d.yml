@@ -22,8 +22,9 @@ jobs:
         uses: actions/checkout@v1
         with:
           repository: cloudflare/boringtun
+          path: boringtun_weekly_build
           ref: ee3051d
-
+          
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
