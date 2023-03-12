@@ -1,9 +1,6 @@
 
 name: sync_and_build
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
   schedule:
     - cron: '30 6 * * 0'
